@@ -12,5 +12,4 @@ export const authenticateJWT: Handler = (req, res, next) => {
     } catch {
         return res.sendStatus(403);
     }
-    res.sendStatus(401);
 };
