@@ -22,6 +22,14 @@ class UserRepository implements IUserRepository {
         return rows.insertId;
     }
 
+    public async saveRefreshToken(userId: number, refreshToken: string): Promise<number> {
+        const [rows] = await this.pool.execute<ResultSetHeader>(
+            "INSERT INTO tokens VALUES (?, ?);",
+            [userId, refreshToken]
+        );
+        return rows.affectedRows ?? false;
+    }
+
     public async getUserById(id: number): Promise<Note[] | null> {
         const [rows] = await this.pool.execute<(Note & RowDataPacket)[]>("");
         return rows ?? null;

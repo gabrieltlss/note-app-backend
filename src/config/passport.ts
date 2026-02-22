@@ -1,8 +1,6 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import dotenv from "dotenv";
 import { UserServices } from "../services/UserServices";
-dotenv.config();
 
 const userServices = new UserServices();
 
@@ -15,17 +13,16 @@ passport.use(
         },
         async (accessToken, refreshToken, profile, done) => {
             try {
-                let user = null;
                 if (typeof profile.emails !== "undefined" && typeof profile.emails[0]?.value !== "undefined") {
                     const email = profile.emails[0].value;
-                    user = await userServices.getUser(email);
+                    let user = await userServices.getUser(email);
 
                     if (!user) {
+                        // Acho que há erro aqui. E se user não for criado, o que getUser retorna? Arrumar!
                         await userServices.createUser(email);
                         user = await userServices.getUser(email);
                         return done(null, user);
                     }
-
                     return done(null, user);
                 }
 

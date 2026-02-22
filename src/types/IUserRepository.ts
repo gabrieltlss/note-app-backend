@@ -5,4 +5,5 @@ export interface IUserRepository {
     getUser: (email: string) => Promise<User | null>;
     createUser: (email: string) => Promise<number>;
     getUserById: (id: number) => Promise<Note[] | null>;
+    saveRefreshToken: (userId: number, refreshToken: string) => Promise<number>;
 };
