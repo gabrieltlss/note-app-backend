@@ -1,8 +1,9 @@
 export type Note = {
-    id: number;
+    note_id: number;
+    user_id: number;
     title: string;
     content: string;
-    status: string;
+    status: "active" | "archived";
     createdAt: Date;
     updatedAt: Date;
 };
