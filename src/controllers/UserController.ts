@@ -84,6 +84,11 @@ export class UserController {
             if (!decodedRefreshTokenDb) return res.sendStatus(403);
 
             const newAccessToken = tokenServices.generateAccessToken({ id: token.id, email: token.email });
+            const newRefreshToken = tokenServices.generateRefreshToken({ id: token.id, email: token.email });
+            const hashNewRefreshToken = bcrypt.hashSync(newRefreshToken, 10);
+            const updateResult = await tokenServices.updateRefreshToken(token.id, hashNewRefreshToken);
+            if (!updateResult) return res.sendStatus(500);
+            res.cookie("refreshToken", { tokenId, refreshToken: newRefreshToken }, { httpOnly: true, secure: false, sameSite: "lax" });
             res.cookie("accessToken", { tokenId, accessToken: newAccessToken }, { httpOnly: true, secure: false, sameSite: "lax" });
             res.sendStatus(201);
         } catch (err) {
