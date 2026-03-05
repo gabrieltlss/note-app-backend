@@ -23,7 +23,7 @@ class UserRepository implements IUserRepository {
             "INSERT INTO user (email) VALUES (?);",
             [email]
         );
-        return rows.insertId;
+        return rows.insertId ?? null;
     }
 
     public async getRefreshTokenById(tokenId: number): Promise<Token | null> {
@@ -70,6 +70,22 @@ class UserRepository implements IUserRepository {
             [userId]
         );
         return rows ?? null;
+    }
+
+    public async createNote(userId: number, title: string, content: string): Promise<number> {
+        const [rows] = await pool.execute<ResultSetHeader>(
+            "INSERT INTO notes (user_id, title, content) VALUES (?, ?, ?);",
+            [userId, title, content]
+        );
+        return rows.insertId ?? null;
+    }
+
+    public async deleteNote(noteId: number): Promise<boolean> {
+        const [rows] = await pool.execute<ResultSetHeader>(
+            "DELETE FROM notes WHERE note_id = ?",
+            [noteId]
+        );
+        return rows.affectedRows ? true : false;
     }
 }
 

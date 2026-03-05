@@ -12,6 +12,8 @@ export interface IUserRepository {
     getRefreshTokenByUser: (userId: number) => Promise<Token | null>;
     updateRefreshToken: (userId: number, token: string) => Promise<number>;
     removeRefreshToken: (tokenId: number) => Promise<boolean>;
-    // Notas
+    // Notes
     getNotesById: (userId: number) => Promise<Note[] | null>;
+    createNote: (userId: number, title: string, content: string) => Promise<number>;
+    deleteNote: (noteId: number) => Promise<boolean>;
 };
