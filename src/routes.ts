@@ -7,7 +7,11 @@ const router = Router();
 const userController = new UserController();
 
 router.get("/google", passport.authenticate("google", { scope: "email" }));
-router.get("/googleCallback", passport.authenticate("google", { session: false }), userController.googleCallback);
+router.get(
+    "/googleCallback",
+    passport.authenticate("google", { session: false, failWithError: true }),
+    userController.googleCallback
+);
 router.get("/auth/refresh", userController.refreshToken);
 router.get("/notes", authenticateJWT, userController.getNotesById);
 

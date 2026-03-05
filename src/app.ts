@@ -14,5 +14,13 @@ app.use(cors({
 app.use(cookieParser())
 app.use(express.json());
 app.use(router);
+app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (error) {
+        console.error("Authentication error:", error);
+        return res.status(401).json({ error: "Authentication failed", message: error.message || "Invalid credentials" });
+    }
+    next();
+});
+
 
 app.listen(3000, () => console.log("Server initialized in http://localhost:3000"));

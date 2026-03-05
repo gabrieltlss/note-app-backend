@@ -18,15 +18,16 @@ passport.use(
                     let user = await userServices.getUser(email);
 
                     if (!user) {
-                        // Acho que há erro aqui. E se user não for criado, o que getUser retorna? Arrumar!
                         await userServices.createUser(email);
                         user = await userServices.getUser(email);
+                        if (!user) throw new Error("Failed to retrieve user after creation");
                         return done(null, user);
                     }
                     return done(null, user);
                 }
 
-                return done(null, false);
+                // return done(null, false);
+                throw new Error("Failed to obtain user information.");
             } catch (error) {
                 return done(error, false);
             }
