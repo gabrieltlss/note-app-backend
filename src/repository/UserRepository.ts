@@ -80,10 +80,10 @@ class UserRepository implements IUserRepository {
         return rows.insertId ?? null;
     }
 
-    public async deleteNote(noteId: number): Promise<boolean> {
+    public async deleteNote(userId: number, noteId: number): Promise<boolean> {
         const [rows] = await pool.execute<ResultSetHeader>(
-            "DELETE FROM notes WHERE note_id = ?",
-            [noteId]
+            "DELETE FROM notes WHERE note_id = ? AND user_id = ?",
+            [noteId, userId]
         );
         return rows.affectedRows ? true : false;
     }

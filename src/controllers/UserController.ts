@@ -46,28 +46,6 @@ export class UserController {
         }
     }
 
-    public getNotesById: Handler = async (req, res) => {
-        try {
-            const cookie = req.cookies.accessToken;
-            if (!cookie.accessToken) return res.sendStatus(401);
-
-            const token = tokenServices.verifyAccessToken(cookie.accessToken); // {id: "userId", token: "token..."}
-            if (typeof token === "string" || typeof token.id !== "number" || typeof token.email !== "string")
-                return res.sendStatus(403);
-
-            const notes = await userServices.getNotesById(token.id);
-            if (!notes) return res.status(204).json({ notes: [] });
-
-            res.status(200).json({ notes });
-        } catch (error) {
-            if (error instanceof TokenExpiredError) return res.sendStatus(401);
-            if (error instanceof NotBeforeError || error instanceof JsonWebTokenError) return res.sendStatus(403);
-            res.sendStatus(500);
-            // Se obter erro ao recuperar notas (tratar no front-end)!
-            // Enviar mensagem?
-        }
-    }
-
     public refreshToken: Handler = async (req, res) => {
         try {
             const { tokenId, refreshToken } = req.cookies.refreshToken;
@@ -94,6 +72,39 @@ export class UserController {
         } catch (err) {
             if (err instanceof TokenExpiredError) return res.sendStatus(401);
             if (err instanceof NotBeforeError || err instanceof JsonWebTokenError) return res.sendStatus(403);
+            res.sendStatus(500);
+        }
+    }
+
+    public getNotesById: Handler = async (req, res) => {
+        try {
+            const user = req.user as { id: number, email: string };
+            if (typeof user === "undefined") return res.sendStatus(401);
+            if (typeof user.id !== "number" || typeof user.email !== "string") return res.sendStatus(403);
+
+            const notes = await userServices.getNotesById(user.id);
+            if (!notes) return res.status(204).json({ notes: [] });
+            res.status(200).json({ notes });
+        } catch (error) {
+            res.sendStatus(500);
+        }
+    }
+
+    public deleteNote: Handler = async (req, res) => {
+        try {
+            const user = req.user as { id: number, email: string };
+            if (typeof user === "undefined") return res.sendStatus(401);
+            if (typeof user.id !== "number" || typeof user.email !== "string") return res.sendStatus(403);
+
+            const noteIdParam = req.params.noteId;
+            if (!noteIdParam || Array.isArray(noteIdParam)) return res.sendStatus(400);
+            const noteId = parseInt(noteIdParam);
+            if (isNaN(noteId)) return res.sendStatus(400);
+
+            const deleteResult = await userServices.deleteNote(user.id, noteId);
+            if (!deleteResult) return res.sendStatus(404);
+            res.sendStatus(204);
+        } catch (error) {
             res.sendStatus(500);
         }
     }

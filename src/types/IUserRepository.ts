@@ -15,5 +15,5 @@ export interface IUserRepository {
     // Notes
     getNotesById: (userId: number) => Promise<Note[] | null>;
     createNote: (userId: number, title: string, content: string) => Promise<number>;
-    deleteNote: (noteId: number) => Promise<boolean>;
+    deleteNote: (userId: number, noteId: number) => Promise<boolean>;
 };

@@ -29,8 +29,8 @@ export class UserServices {
         return newNote;
     }
 
-    public async deleteNote(noteId: number): Promise<boolean> {
-        const deleteResult = await userRepository.deleteNote(noteId);
+    public async deleteNote(userId: number, noteId: number): Promise<boolean> {
+        const deleteResult = await userRepository.deleteNote(userId, noteId);
         if (!deleteResult) return false;
         return true;
     }

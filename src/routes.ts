@@ -14,5 +14,6 @@ router.get(
 );
 router.get("/auth/refresh", userController.refreshToken);
 router.get("/notes", authenticateJWT, userController.getNotesById);
+router.delete("/notes/:noteId", authenticateJWT, userController.deleteNote);
 
 export default router;
