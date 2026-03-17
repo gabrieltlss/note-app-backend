@@ -9,6 +9,7 @@ export interface IUserRepository {
     getUserByEmail: (email: string) => Promise<User | null>;
     createUser: (email: string) => Promise<number>;
     deleteUser: (userId: number) => Promise<number>;
+    logout: (userId: number) => Promise<number>;
     // Token
     saveRefreshToken: (userId: number, refreshToken: string) => Promise<number>;
     getRefreshTokenById: (tokenId: number) => Promise<Token | null>;

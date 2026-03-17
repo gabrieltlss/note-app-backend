@@ -13,6 +13,7 @@ router.get(
     userController.googleCallback
 );
 router.get("/auth/refresh", userController.refreshToken);
+router.get("/auth/logout", authenticateJWT, userController.logout);
 
 // Notas
 router.get("/notes", authenticateJWT, userController.getNotesById);

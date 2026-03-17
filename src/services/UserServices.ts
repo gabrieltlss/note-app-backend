@@ -28,6 +28,12 @@ export class UserServices {
         return isUserDeleted;
     }
 
+    public async logout(userId: number): Promise<number | null> {
+        const logoutUser = await userRepository.logout(userId);
+        if (!logoutUser) return null;
+        return logoutUser;
+    }
+
     public async getNotesById(userId: number): Promise<Note[] | null> {
         const notes = await userRepository.getNotesById(userId);
         if (!notes) return null;

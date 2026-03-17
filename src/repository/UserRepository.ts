@@ -42,6 +42,14 @@ class UserRepository implements IUserRepository {
         return rows.affectedRows ?? null
     }
 
+    public async logout(userId: number): Promise<number> {
+        const [rows] = await pool.execute<ResultSetHeader>(
+            "UPDATE tokens SET token = null WHERE user_id = ?;",
+            [userId]
+        );
+        return rows.affectedRows ?? null;
+    }
+
     public async getRefreshTokenById(tokenId: number): Promise<Token | null> {
         const [rows] = await pool.execute<(Token & RowDataPacket)[]>(
             "SELECT * FROM tokens WHERE token_id = ?", [tokenId]

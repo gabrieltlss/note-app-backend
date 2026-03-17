@@ -83,6 +83,29 @@ export class UserController {
         }
     }
 
+    public logout: Handler = async (req, res) => {
+        try {
+            const user = req.user as { id: number, email: string };
+            const accessToken = req.cookies.accessToken;
+            const refreshToken = req.cookies.refreshToken;
+
+            if (typeof user === "undefined" || !accessToken || !refreshToken)
+                return res.status(401).json({ status: 401, error: "UserNotDefined" });
+            if (typeof user.id !== "number" || typeof user.email !== "string")
+                return res.status(403).json({ status: 403, error: "InvalidUser" });
+
+            const isLoggedOut = await userServices.logout(user.id);
+            if (!isLoggedOut) return res.status(400).json({ status: 400, error: "LogoutError" });
+
+            res.clearCookie("accessToken", { httpOnly: true, secure: false, sameSite: "lax" });
+            res.clearCookie("refreshToken", { httpOnly: true, secure: false, sameSite: "lax" });
+            res.status(200).json({ staus: 200, message: "Success" });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ status: 500, error: "ServerError" });
+        }
+    }
+
     public getUserInfo: Handler = async (req, res) => {
         try {
             const user = req.user as { id: number, email: string };
@@ -112,6 +135,8 @@ export class UserController {
             const deleteUser = await userServices.deleteUser(user.id);
             if (!deleteUser) return res.status(404).json({ status: 404, error: "UserNotFound" });
 
+            res.clearCookie("accessToken", { httpOnly: true, secure: false, sameSite: "lax" });
+            res.clearCookie("refreshToken", { httpOnly: true, secure: false, sameSite: "lax" });
             res.status(200).json({ status: 200, error: "UserDeleted" });
         } catch (error) {
             console.log(error);
