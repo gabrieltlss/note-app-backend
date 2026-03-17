@@ -1,30 +1,33 @@
 import { Handler } from "express";
-import { JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken";
 import { TokenServices } from "../services/TokenServices";
+import { JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken";
 
 const tokenServices = new TokenServices();
 
 export const authenticateJWT: Handler = (req, res, next) => {
     // cookie: { tokenId, accessToken }
     const cookie = req.cookies.accessToken;
-    if (!cookie.accessToken) return res.sendStatus(401);
+    if (!cookie.accessToken) return res.status(401).json({ status: 401, error: "InvalidToken" });
 
     try {
         const user = tokenServices.verifyAccessToken(cookie.accessToken);
-        if (typeof user === "string") return res.sendStatus(403);
+        if (typeof user === "string")
+            return res.status(403).json({ status: 403, error: "InvalidToken" });
+
         if (typeof user.id === "number" && typeof user.email === "string") {
             req.user = { id: user.id, email: user.email };
             next();
             return;
         }
-        return res.sendStatus(403);
-    } catch (err) {
-        if (err instanceof TokenExpiredError) {
-            return res.sendStatus(401);
+        return res.status(403).json({ status: 403, error: "InvalidToken" });
+    } catch (error) {
+        if (error instanceof TokenExpiredError)
+            return res.status(401).json({ status: 401, error: "InvalidToken" });
+
+        if (error instanceof JsonWebTokenError || error instanceof NotBeforeError) {
+            return res.status(403).json({ status: 403, error: "InvalidToken" });
         }
-        if (err instanceof NotBeforeError || err instanceof JsonWebTokenError) {
-            return res.sendStatus(403);
-        }
-        res.sendStatus(500);
+
+        res.status(500).json({ status: 500, error: "InvalidToken" });
     }
 };

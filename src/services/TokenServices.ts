@@ -12,7 +12,7 @@ export class TokenServices {
         const accessToken = jwt.sign(
             payload,
             String(process.env.JWT_ACCESS_SECRET),
-            { expiresIn: "5s" }
+            { expiresIn: "15m" }
         );
         return accessToken;
     }
@@ -21,7 +21,7 @@ export class TokenServices {
         const refreshToken = jwt.sign(
             payload,
             String(process.env.JWT_REFRESH_SECRET),
-            { expiresIn: "15s" }
+            { expiresIn: "1h" }
         );
         return refreshToken;
     }
@@ -31,18 +31,9 @@ export class TokenServices {
         return validateToken;
     }
 
-    public async verifyRefreshToken(tokenId: number, refreshToken: string): Promise<TokenPayload> {
-        try {
-            const validateToken: TokenPayload = jwt.verify(refreshToken, String(process.env.JWT_REFRESH_SECRET));
-            return validateToken;
-        } catch (error) {
-            if (error instanceof jwt.TokenExpiredError || error instanceof jwt.JsonWebTokenError
-                || error instanceof jwt.NotBeforeError) {
-                await this.removeRefreshToken(tokenId);
-                throw error;
-            }
-            throw error;
-        }
+    public async verifyRefreshToken(refreshToken: string): Promise<TokenPayload> {
+        const validateToken: TokenPayload = jwt.verify(refreshToken, String(process.env.JWT_REFRESH_SECRET));
+        return validateToken;
     }
 
     public async saveRefreshToken(userId: number, refreshToken: string): Promise<boolean | number> {

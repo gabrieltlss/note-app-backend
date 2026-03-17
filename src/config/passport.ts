@@ -15,11 +15,11 @@ passport.use(
             try {
                 if (typeof profile.emails !== "undefined" && typeof profile.emails[0]?.value !== "undefined") {
                     const email = profile.emails[0].value;
-                    let user = await userServices.getUser(email);
+                    let user = await userServices.getUserByEmail(email);
 
                     if (!user) {
                         await userServices.createUser(email);
-                        user = await userServices.getUser(email);
+                        user = await userServices.getUserByEmail(email);
                         if (!user) throw new Error("Failed to retrieve user after creation");
                         return done(null, user);
                     }

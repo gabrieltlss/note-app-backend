@@ -11,8 +11,9 @@ app.use(cors({
     origin: "http://localhost:5173",
     credentials: true
 }));
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(router);
 app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error) {
@@ -21,6 +22,5 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
     }
     next();
 });
-
 
 app.listen(3000, () => console.log("Server initialized in http://localhost:3000"));

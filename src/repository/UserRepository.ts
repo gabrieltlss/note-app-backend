@@ -10,12 +10,20 @@ const pool = getPool();
 class UserRepository implements IUserRepository {
     constructor() { }
 
-    public async getUser(email: string): Promise<User | null> {
+    public async getUserByEmail(email: string): Promise<User | null> {
         const [rows] = await pool.execute<(User & RowDataPacket)[]>(
             "SELECT * FROM user WHERE email = ?",
             [email]
         );
         return rows[0] ?? null; // If undefined -> null.
+    }
+
+    public async getUserById(userId: number): Promise<User | null> {
+        const [rows] = await pool.execute<(User & RowDataPacket)[]>(
+            "SELECT * FROM user WHERE id = ?",
+            [userId]
+        );
+        return rows[0] ?? null;
     }
 
     public async createUser(email: string): Promise<number> {
@@ -24,6 +32,14 @@ class UserRepository implements IUserRepository {
             [email]
         );
         return rows.insertId ?? null;
+    }
+
+    public async deleteUser(userId: number): Promise<number> {
+        const [rows] = await pool.execute<ResultSetHeader>(
+            "DELETE FROM user WHERE id = ?;",
+            [userId]
+        )
+        return rows.affectedRows ?? null
     }
 
     public async getRefreshTokenById(tokenId: number): Promise<Token | null> {
@@ -85,6 +101,14 @@ class UserRepository implements IUserRepository {
             "DELETE FROM notes WHERE note_id = ? AND user_id = ?",
             [noteId, userId]
         );
+        return rows.affectedRows ? true : false;
+    }
+
+    public async updateNote(noteId: number, title: string, content: string, status: "active" | "archived"): Promise<boolean> {
+        const [rows] = await pool.execute<ResultSetHeader>(
+            "UPDATE notes SET title = ?, content = ?, status = ? WHERE note_id = ?",
+            [title, content, status, noteId]
+        )
         return rows.affectedRows ? true : false;
     }
 }

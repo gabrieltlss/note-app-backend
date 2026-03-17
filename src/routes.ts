@@ -13,7 +13,15 @@ router.get(
     userController.googleCallback
 );
 router.get("/auth/refresh", userController.refreshToken);
+
+// Notas
 router.get("/notes", authenticateJWT, userController.getNotesById);
+router.post("/notes", authenticateJWT, userController.createNote);
+router.put("/notes/:noteId", authenticateJWT, userController.updateNote);
 router.delete("/notes/:noteId", authenticateJWT, userController.deleteNote);
+
+// Conta do usuário
+router.get("/account/user", authenticateJWT, userController.getUserInfo);
+router.delete("/account/delete", authenticateJWT, userController.deleteUser);
 
 export default router;
