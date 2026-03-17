@@ -38,7 +38,7 @@ export class UserController {
                 if (!saveRefreshToken) return res.sendStatus(500);
                 res.cookie("refreshToken", { tokenId, refreshToken }, { httpOnly: true, secure: false, sameSite: "lax" });
                 res.cookie("accessToken", { tokenId, accessToken }, { httpOnly: true, secure: false, sameSite: "lax" }); // secure: true em PRODUÇÃO.
-                res.status(200).redirect("http://localhost:5173/home");
+                res.status(200).redirect(`${process.env.FRONT_URL}/home`);
             } catch (error) {
                 res.status(500);
             }
