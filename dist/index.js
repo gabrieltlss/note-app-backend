@@ -9,15 +9,17 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const cors_1 = __importDefault(require("cors"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const app = (0, express_1.default)();
-app.use((0, cookie_parser_1.default)());
-app.use(express_1.default.json());
-app.use((0, cors_1.default)({
+const corsOptions = {
     origin: `${process.env.ORIGIN_URL}`,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
-}));
+};
+const app = (0, express_1.default)();
+app.use((0, cors_1.default)(corsOptions));
+app.options("*", (0, cors_1.default)(corsOptions));
+app.use((0, cookie_parser_1.default)());
+app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(routes_1.default);
 app.use((error, req, res, next) => {

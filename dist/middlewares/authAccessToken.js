@@ -6,7 +6,6 @@ const jsonwebtoken_1 = require("jsonwebtoken");
 const tokenServices = new TokenServices_1.TokenServices();
 const authenticateJWT = (req, res, next) => {
     // cookie: { tokenId, accessToken }
-    console.log("ACCESS COOKIES:", req.cookies.accessToken);
     const cookie = req.cookies.accessToken;
     if (!cookie.accessToken)
         return res.status(401).json({ status: 401, error: "InvalidToken" });
