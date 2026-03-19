@@ -6,6 +6,7 @@ const tokenServices = new TokenServices();
 
 export const authenticateJWT: Handler = (req, res, next) => {
     // cookie: { tokenId, accessToken }
+    console.log("ACCESS COOKIES:", req.cookies.accessToken);
     const cookie = req.cookies.accessToken;
     if (!cookie.accessToken) return res.status(401).json({ status: 401, error: "InvalidToken" });
 
