@@ -25,4 +25,6 @@ router.delete("/notes/:noteId", authenticateJWT, userController.deleteNote);
 router.get("/account/user", authenticateJWT, userController.getUserInfo);
 router.delete("/account/delete", authenticateJWT, userController.deleteUser);
 
+router.get("/test", (req, res) => res.status(200).json("ok"));
+
 export default router;
