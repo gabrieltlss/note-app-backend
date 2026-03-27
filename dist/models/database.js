@@ -12,7 +12,8 @@ const connectionData = {
     user: String(process.env.DB_USER),
     password: String(process.env.DB_PASSWORD),
     database: String(process.env.DB_DATABASE),
-    port: Number(process.env.PORT)
+    port: Number(process.env.PORT),
+    host: String(process.env.HOST)
 };
 function getClient() {
     const client = promise_1.default.createConnection(connectionData);
