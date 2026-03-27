@@ -1,6 +1,6 @@
 import mysql2 from "mysql2/promise";
-// import dotenv from "dotenv";
-// dotenv.config();
+import dotenv from "dotenv";
+dotenv.config();
 
 const connectionData = {
     user: String(process.env.DB_USER),
