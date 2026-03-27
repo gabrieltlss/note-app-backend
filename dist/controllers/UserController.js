@@ -35,8 +35,8 @@ class UserController {
                 }
                 if (!saveRefreshToken)
                     return res.sendStatus(500);
-                res.cookie("refreshToken", { tokenId, refreshToken }, { httpOnly: true, secure: true, sameSite: "none" });
-                res.cookie("accessToken", { tokenId, accessToken }, { httpOnly: true, secure: true, sameSite: "none" }); // secure: true em PRODUÇÃO.
+                res.cookie("refreshToken", { tokenId, refreshToken }, { httpOnly: true, secure: true, sameSite: "strict" });
+                res.cookie("accessToken", { tokenId, accessToken }, { httpOnly: true, secure: true, sameSite: "strict" }); // secure: true em PRODUÇÃO.
                 res.status(200).redirect(`${process.env.FRONT_URL}/home`);
             }
             catch (error) {
@@ -64,8 +64,8 @@ class UserController {
             const updateResult = await tokenServices.updateRefreshToken(token.id, hashNewRefreshToken);
             if (!updateResult)
                 return res.status(500).json({ status: 500, error: "ServerError" });
-            res.cookie("refreshToken", { tokenId, refreshToken: newRefreshToken }, { httpOnly: true, secure: true, sameSite: "none" });
-            res.cookie("accessToken", { tokenId, accessToken: newAccessToken }, { httpOnly: true, secure: true, sameSite: "none" });
+            res.cookie("refreshToken", { tokenId, refreshToken: newRefreshToken }, { httpOnly: true, secure: true, sameSite: "strict" });
+            res.cookie("accessToken", { tokenId, accessToken: newAccessToken }, { httpOnly: true, secure: true, sameSite: "strict" });
             res.status(201).json({ status: 201, message: "TokenCreated" });
         }
         catch (err) {
@@ -88,8 +88,8 @@ class UserController {
             const isLoggedOut = await userServices.logout(user.id);
             if (!isLoggedOut)
                 return res.status(400).json({ status: 400, error: "LogoutError" });
-            res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "none" });
-            res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "none" });
+            res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "strict" });
+            res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "strict" });
             res.status(200).json({ staus: 200, message: "Success" });
         }
         catch (error) {
@@ -124,8 +124,8 @@ class UserController {
             const deleteUser = await userServices.deleteUser(user.id);
             if (!deleteUser)
                 return res.status(404).json({ status: 404, error: "UserNotFound" });
-            res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "none" });
-            res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "none" });
+            res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "strict" });
+            res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "strict" });
             res.status(200).json({ status: 200, error: "UserDeleted" });
         }
         catch (error) {

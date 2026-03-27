@@ -18,5 +18,5 @@ router.delete("/notes/:noteId", authAccessToken_1.authenticateJWT, userControlle
 // Conta do usuário
 router.get("/account/user", authAccessToken_1.authenticateJWT, userController.getUserInfo);
 router.delete("/account/delete", authAccessToken_1.authenticateJWT, userController.deleteUser);
-router.get("/test", (req, res) => res.status(200).json({ client: process.env.DB_USER }));
+router.get("/test", (req, res) => res.status(200).json("ok"));
 exports.default = router;
