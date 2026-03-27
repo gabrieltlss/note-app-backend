@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getClient = getClient;
 exports.getPool = getPool;
 const promise_1 = __importDefault(require("mysql2/promise"));
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+// import dotenv from "dotenv";
+// dotenv.config();
 const connectionData = {
     user: String(process.env.DB_USER),
     password: String(process.env.DB_PASSWORD),
