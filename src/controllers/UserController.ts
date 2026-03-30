@@ -165,8 +165,6 @@ export class UserController {
 
     public deleteNote: Handler = async (req, res) => {
         try {
-            console.log("USER:", req.user);
-            console.log("COOKIES:", req.cookies);
             const user = req.user as { id: number, email: string };
             if (typeof user === "undefined")
                 return res.status(401).json({ status: 401, error: "UserNotDefined" });
