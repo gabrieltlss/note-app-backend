@@ -4,7 +4,7 @@ Trata-se da camada lógica (back-end) de um aplicativo de notas inspirado no Goo
 ## Funcionalidades
 * Login seguro com Google OAuth
 * Operações básicas (CRUD) para gerenciar notas
-* Visualização notas ativas e arquivadas
+* Visualização de notas ativas e arquivadas
 * Exclusão de conta e notas relacionadas
 * Persistência de dados em Banco de Dados.
 
@@ -94,4 +94,4 @@ Gabriel Teles ([Perfil Github](https://github.com/gabrieltlss))
 Contato pelo site: https://gabrieltlss.com.br/
 
 ## Licença
-Sob licença [MIT](./LICENSE)
+Este projeto está licenciado sob a licença [MIT](./LICENSE)
