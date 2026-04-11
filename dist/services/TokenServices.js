@@ -21,7 +21,7 @@ class TokenServices {
         const validateToken = jsonwebtoken_1.default.verify(accessToken, String(process.env.JWT_ACCESS_SECRET));
         return validateToken;
     }
-    async verifyRefreshToken(refreshToken) {
+    verifyRefreshToken(refreshToken) {
         const validateToken = jsonwebtoken_1.default.verify(refreshToken, String(process.env.JWT_REFRESH_SECRET));
         return validateToken;
     }

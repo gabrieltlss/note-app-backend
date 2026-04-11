@@ -49,7 +49,7 @@ class UserController {
             const { tokenId, refreshToken } = req.cookies.refreshToken;
             if (!refreshToken)
                 return res.status(401).json({ status: 401, error: "InvalidToken" });
-            const token = await tokenServices.verifyRefreshToken(refreshToken);
+            const token = tokenServices.verifyRefreshToken(refreshToken);
             if (typeof token === "string" || typeof token.id !== "number" || typeof token.email !== "string")
                 return res.status(403).json({ status: 403, error: "InvalidToken" });
             const refreshTokenBD = await tokenServices.getRefreshTokenById(tokenId);

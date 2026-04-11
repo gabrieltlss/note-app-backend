@@ -31,7 +31,7 @@ export class TokenServices {
         return validateToken;
     }
 
-    public async verifyRefreshToken(refreshToken: string): Promise<TokenPayload> {
+    public verifyRefreshToken(refreshToken: string): TokenPayload {
         const validateToken: TokenPayload = jwt.verify(refreshToken, String(process.env.JWT_REFRESH_SECRET));
         return validateToken;
     }
