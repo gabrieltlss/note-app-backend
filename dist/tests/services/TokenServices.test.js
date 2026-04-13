@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const UserRepository_1 = require("../../repository/UserRepository");
 const TokenServices_1 = require("../../services/TokenServices");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 jest.mock("jsonwebtoken");
+jest.mock("../../repository/UserRepository");
 describe("teste de serviços de tokens", () => {
     describe("testes de access tokens", () => {
         beforeEach(() => {
@@ -60,6 +62,24 @@ describe("teste de serviços de tokens", () => {
             expect(jsonwebtoken_1.default.verify).toHaveBeenCalledTimes(1);
             expect(jsonwebtoken_1.default.verify).toHaveBeenCalledWith("jwt-token", process.env.JWT_REFRESH_SECRET);
             expect(token).toEqual(mockPayload);
+        });
+    });
+    describe("testa registro e atualização de refreshToken", () => {
+        const tokenService = new TokenServices_1.TokenServices();
+        beforeEach(async () => {
+            jest.clearAllMocks();
+        });
+        it("falha ao salvar refreshToken", async () => {
+            jest.spyOn(UserRepository_1.UserRepository.prototype, "saveRefreshToken").mockResolvedValue(0);
+            const token = await tokenService.saveRefreshToken(1, "teste");
+            expect(token).toBe(false);
+            expect(UserRepository_1.UserRepository.prototype.saveRefreshToken).toHaveBeenCalledWith(1, "teste");
+        });
+        it("sucesso ao salva rereshToken", async () => {
+            jest.spyOn(UserRepository_1.UserRepository.prototype, "saveRefreshToken").mockResolvedValue(10);
+            const token = await tokenService.saveRefreshToken(1, "teste");
+            expect(token).toBe(10);
+            expect(UserRepository_1.UserRepository.prototype.saveRefreshToken).toHaveBeenCalledWith(1, "teste");
         });
     });
 });

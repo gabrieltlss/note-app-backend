@@ -1,8 +1,9 @@
-import { emitWarning } from "node:process";
+import { UserRepository } from "../../repository/UserRepository";
 import { TokenServices } from "../../services/TokenServices";
 import jwt from "jsonwebtoken";
 
 jest.mock("jsonwebtoken");
+jest.mock("../../repository/UserRepository");
 
 describe("teste de serviços de tokens", () => {
     describe("testes de access tokens", () => {
@@ -76,6 +77,28 @@ describe("teste de serviços de tokens", () => {
             expect(jwt.verify).toHaveBeenCalledTimes(1);
             expect(jwt.verify).toHaveBeenCalledWith("jwt-token", process.env.JWT_REFRESH_SECRET);
             expect(token).toEqual(mockPayload);
+        })
+    })
+
+    describe("testa registro e atualização de refreshToken", () => {
+        const tokenService = new TokenServices();
+
+        beforeEach(async () => {
+            jest.clearAllMocks();
+        })
+
+        it("falha ao salvar refreshToken", async () => {
+            jest.spyOn(UserRepository.prototype, "saveRefreshToken").mockResolvedValue(0);
+            const token = await tokenService.saveRefreshToken(1, "teste");
+            expect(token).toBe(false);
+            expect(UserRepository.prototype.saveRefreshToken).toHaveBeenCalledWith(1, "teste");
+        })
+
+        it("sucesso ao salva rereshToken", async () => {
+            jest.spyOn(UserRepository.prototype, "saveRefreshToken").mockResolvedValue(10);
+            const token = await tokenService.saveRefreshToken(1, "teste");
+            expect(token).toBe(10);
+            expect(UserRepository.prototype.saveRefreshToken).toHaveBeenCalledWith(1, "teste");
         })
     })
 })
