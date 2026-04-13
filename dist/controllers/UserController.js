@@ -5,76 +5,54 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
-const jsonwebtoken_1 = require("jsonwebtoken");
 const TokenServices_1 = require("../services/TokenServices");
 const UserServices_1 = require("../services/UserServices");
+const AppError_1 = require("../errors/AppError");
 const tokenServices = new TokenServices_1.TokenServices();
 const userServices = new UserServices_1.UserServices();
 class UserController {
     constructor() { }
     googleCallback = async (req, res) => {
         const user = req.user;
-        if (typeof user !== "undefined") {
-            try {
-                if (!user.id || !user.email)
-                    return res.sendStatus(401);
-                const refreshTokenDbExists = await tokenServices.getRefreshTokenByUser(user.id);
-                const userPayload = { id: Number(user.id), email: String(user.email) };
-                const accessToken = tokenServices.generateAccessToken(userPayload);
-                const refreshToken = tokenServices.generateRefreshToken(userPayload);
-                const hashRefreshToken = bcrypt_1.default.hashSync(refreshToken, 10);
-                let saveRefreshToken;
-                let tokenId;
-                if (refreshTokenDbExists) {
-                    saveRefreshToken = await tokenServices.updateRefreshToken(Number(user.id), hashRefreshToken);
-                    tokenId = refreshTokenDbExists["token_id"];
-                }
-                else if (!refreshTokenDbExists) {
-                    saveRefreshToken = await tokenServices.saveRefreshToken(Number(user.id), hashRefreshToken);
-                    tokenId = saveRefreshToken; // este retorna id do token inserido no BD.
-                }
-                if (!saveRefreshToken)
-                    return res.sendStatus(500);
-                res.cookie("refreshToken", { tokenId, refreshToken }, { httpOnly: true, secure: true, sameSite: "strict" });
-                res.cookie("accessToken", { tokenId, accessToken }, { httpOnly: true, secure: true, sameSite: "strict" }); // secure: true em PRODUÇÃO.
-                res.status(200).redirect(`${process.env.FRONT_URL}/home`);
-            }
-            catch (error) {
-                res.status(500);
-            }
+        if (typeof user === "undefined")
+            throw new AppError_1.AppError("UserNotDefined", 401);
+        if (!user.id || !user.email)
+            throw new AppError_1.AppError("InvalidUser", 401);
+        const refreshTokenDbExists = await tokenServices.getRefreshTokenByUser(user.id);
+        const userPayload = { id: Number(user.id), email: String(user.email) };
+        const accessToken = tokenServices.generateAccessToken(userPayload);
+        const refreshToken = tokenServices.generateRefreshToken(userPayload);
+        const hashRefreshToken = bcrypt_1.default.hashSync(refreshToken, 10);
+        let saveRefreshToken;
+        let tokenId;
+        if (refreshTokenDbExists) {
+            saveRefreshToken = await tokenServices.updateRefreshToken(Number(user.id), hashRefreshToken);
+            tokenId = refreshTokenDbExists["token_id"];
         }
+        else if (!refreshTokenDbExists) {
+            saveRefreshToken = await tokenServices.saveRefreshToken(Number(user.id), hashRefreshToken);
+            tokenId = saveRefreshToken; // este retorna id do token inserido no BD.
+        }
+        res.cookie("refreshToken", { tokenId, refreshToken }, { httpOnly: true, secure: true, sameSite: "strict" });
+        res.cookie("accessToken", { tokenId, accessToken }, { httpOnly: true, secure: true, sameSite: "strict" }); // secure: true em PRODUÇÃO.
+        res.status(200).redirect(`${process.env.FRONT_URL}/home`);
     };
     refreshToken = async (req, res) => {
-        try {
-            const { tokenId, refreshToken } = req.cookies.refreshToken;
-            if (!refreshToken)
-                return res.status(401).json({ status: 401, error: "InvalidToken" });
-            const token = tokenServices.verifyRefreshToken(refreshToken);
-            if (typeof token === "string" || typeof token.id !== "number" || typeof token.email !== "string")
-                return res.status(403).json({ status: 403, error: "InvalidToken" });
-            const refreshTokenBD = await tokenServices.getRefreshTokenById(tokenId);
-            if (!refreshTokenBD)
-                return res.status(401).json({ status: 401, error: "InvalidToken" });
-            const decodedRefreshTokenDb = bcrypt_1.default.compareSync(refreshToken, refreshTokenBD.token);
-            if (!decodedRefreshTokenDb)
-                return res.status(403).json({ status: 403, error: "InvalidToken" });
-            const newAccessToken = tokenServices.generateAccessToken({ id: token.id, email: token.email });
-            const newRefreshToken = tokenServices.generateRefreshToken({ id: token.id, email: token.email });
-            const hashNewRefreshToken = bcrypt_1.default.hashSync(newRefreshToken, 10);
-            const updateResult = await tokenServices.updateRefreshToken(token.id, hashNewRefreshToken);
-            if (!updateResult)
-                return res.status(500).json({ status: 500, error: "ServerError" });
-            res.cookie("refreshToken", { tokenId, refreshToken: newRefreshToken }, { httpOnly: true, secure: true, sameSite: "strict" });
-            res.cookie("accessToken", { tokenId, accessToken: newAccessToken }, { httpOnly: true, secure: true, sameSite: "strict" });
-            res.status(201).json({ status: 201, message: "TokenCreated" });
-        }
-        catch (err) {
-            if (err instanceof jsonwebtoken_1.TokenExpiredError)
-                return res.status(401).json({ status: 401, error: "InvalidToken" });
-            if (err instanceof jsonwebtoken_1.NotBeforeError || err instanceof jsonwebtoken_1.JsonWebTokenError)
-                return res.status(403).json({ status: 403, error: "InvalidToken" });
-            res.status(500).json({ status: 500, error: "ServerError" });
-        }
+        const { tokenId, refreshToken } = req.cookies.refreshToken;
+        if (!refreshToken)
+            throw new AppError_1.AppError("InvalidToken", 401);
+        const token = tokenServices.verifyRefreshToken(refreshToken);
+        if (typeof token === "string" || typeof token.id !== "number" || typeof token.email !== "string")
+            throw new AppError_1.AppError("InvalidToken", 403);
+        const refreshTokenBD = await tokenServices.getRefreshTokenById(tokenId);
+        tokenServices.decodeRefreshToken(refreshToken, refreshTokenBD.token);
+        const newAccessToken = tokenServices.generateAccessToken({ id: token.id, email: token.email });
+        const newRefreshToken = tokenServices.generateRefreshToken({ id: token.id, email: token.email });
+        const hashNewRefreshToken = bcrypt_1.default.hashSync(newRefreshToken, 10);
+        await tokenServices.updateRefreshToken(token.id, hashNewRefreshToken);
+        res.cookie("refreshToken", { tokenId, refreshToken: newRefreshToken }, { httpOnly: true, secure: true, sameSite: "strict" });
+        res.cookie("accessToken", { tokenId, accessToken: newAccessToken }, { httpOnly: true, secure: true, sameSite: "strict" });
+        res.status(201).json({ status: 201, message: "TokenCreated" });
     };
     logout = async (req, res) => {
         try {
