@@ -15,17 +15,7 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(router);
-
-app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (error) {
-        console.error("Authentication error:", error);
-        return res.status(401).json({ error: "Authentication failed", message: error.message || "Invalid credentials" });
-    }
-    next();
-});
-
 app.use(errorMiddleware);
 
 const PORT = 3001

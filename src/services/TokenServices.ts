@@ -1,7 +1,9 @@
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { UserRepository } from "../repository/UserRepository";
 import { TokenPayload } from "../types/TokenPayload";
 import { Token } from "../types/Token";
-import jwt from "jsonwebtoken";
+import { AppError } from "../errors/AppError";
 
 const userRepository = new UserRepository();
 
@@ -12,7 +14,7 @@ export class TokenServices {
         const accessToken = jwt.sign(
             payload,
             String(process.env.JWT_ACCESS_SECRET),
-            { expiresIn: "15m" }
+            { expiresIn: "15s" }
         );
         return accessToken;
     }
@@ -27,37 +29,72 @@ export class TokenServices {
     }
 
     public verifyAccessToken(accessToken: string): TokenPayload {
-        const validateToken: TokenPayload = jwt.verify(accessToken, String(process.env.JWT_ACCESS_SECRET));
-        return validateToken;
+        try {
+            const validateToken: TokenPayload = jwt.verify(accessToken, String(process.env.JWT_ACCESS_SECRET));
+            return validateToken;
+        } catch (err) {
+            if (err instanceof jwt.TokenExpiredError) throw new AppError("InvalidToken", 401);
+            if (err instanceof jwt.NotBeforeError || err instanceof jwt.JsonWebTokenError)
+                throw new AppError("InvalidToken", 403);
+            throw new AppError("ServerError", 500);
+        }
     }
 
     public verifyRefreshToken(refreshToken: string): TokenPayload {
-        const validateToken: TokenPayload = jwt.verify(refreshToken, String(process.env.JWT_REFRESH_SECRET));
-        return validateToken;
+        try {
+            const validateToken: TokenPayload = jwt.verify(refreshToken, String(process.env.JWT_REFRESH_SECRET));
+            return validateToken;
+        } catch (err) {
+            if (err instanceof jwt.TokenExpiredError) throw new AppError("InvalidToken", 401);
+            if (err instanceof jwt.NotBeforeError || err instanceof jwt.JsonWebTokenError)
+                throw new AppError("InvalidToken", 403);
+            throw new AppError("ServerError", 500);
+        }
     }
 
-    public async saveRefreshToken(userId: number, refreshToken: string): Promise<boolean | number> {
-        const newToken = await userRepository.saveRefreshToken(userId, refreshToken);
-        if (!newToken) return false;
-        return newToken;
+    public async saveRefreshToken(userId: number, refreshToken: string): Promise<number> {
+        try {
+            const newToken = await userRepository.saveRefreshToken(userId, refreshToken);
+            if (!newToken) throw new AppError("SaveTokenError", 400);
+            return newToken;
+        } catch (error) {
+            throw new AppError("ServerError", 500);
+        }
     }
 
-    public async updateRefreshToken(userId: number, token: string): Promise<number | boolean> {
-        const updatedToken = await userRepository.updateRefreshToken(userId, token);
-        if (!updatedToken) return false;
-        return updatedToken;
+    public async updateRefreshToken(userId: number, token: string): Promise<number> {
+        try {
+            const updatedToken = await userRepository.updateRefreshToken(userId, token);
+            if (!updatedToken) throw new AppError("UpdateTokenError", 400);
+            return updatedToken;
+        } catch (error) {
+            throw new AppError("ServerError", 500);
+        }
     }
 
-    public async getRefreshTokenById(tokenId: number): Promise<Token | false> {
-        const refreshToken = await userRepository.getRefreshTokenById(tokenId);
-        if (!refreshToken) { return false; }
-        return refreshToken;
+    public async getRefreshTokenById(tokenId: number): Promise<Token> {
+        try {
+            const refreshToken = await userRepository.getRefreshTokenById(tokenId);
+            if (!refreshToken) throw new AppError("InvalidToken", 401);
+            return refreshToken;
+        } catch (error) {
+            throw new AppError("ServerError", 500);
+        }
     }
 
-    public async getRefreshTokenByUser(userId: number): Promise<Token | false> {
-        const refreshToken = await userRepository.getRefreshTokenByUser(userId);
-        if (!refreshToken) { return false; }
-        return refreshToken;
+    public async getRefreshTokenByUser(userId: number): Promise<Token> {
+        try {
+            const refreshToken = await userRepository.getRefreshTokenByUser(userId);
+            if (!refreshToken) throw new AppError("GetTokenError", 400);
+            return refreshToken;
+        } catch (error) {
+            throw new AppError("ServerError", 500);
+        }
+    }
+
+    public decodeRefreshToken(refreshToken: string, refreshTokenBD: string) {
+        const decodedRefreshTokenDb = bcrypt.compareSync(refreshToken, refreshTokenBD);
+        if (!decodedRefreshTokenDb) throw new AppError("InvalidToken", 403);
     }
 
     private async removeRefreshToken(tokenId: number): Promise<boolean> {

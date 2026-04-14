@@ -19,13 +19,6 @@ app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(routes_1.default);
-app.use((error, req, res, next) => {
-    if (error) {
-        console.error("Authentication error:", error);
-        return res.status(401).json({ error: "Authentication failed", message: error.message || "Invalid credentials" });
-    }
-    next();
-});
 app.use(errorMiddleware_1.errorMiddleware);
 const PORT = 3001;
 app.listen(PORT, () => console.log("Server initialized in http://localhost:3001"));
