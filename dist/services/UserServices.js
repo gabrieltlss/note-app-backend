@@ -1,14 +1,20 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserServices = void 0;
+const AppError_1 = require("../errors/AppError");
 const UserRepository_1 = require("../repository/UserRepository");
 const userRepository = new UserRepository_1.UserRepository();
 class UserServices {
     async getUserById(user_id) {
-        const user = await userRepository.getUserById(user_id);
-        if (!user)
-            return false;
-        return user;
+        try {
+            const user = await userRepository.getUserById(user_id);
+            if (!user)
+                throw new AppError_1.AppError("UserNotFound", 404);
+            return user;
+        }
+        catch (error) {
+            throw new AppError_1.AppError("ServerError", 500);
+        }
     }
     async getUserByEmail(email) {
         const user = await userRepository.getUserByEmail(email);
@@ -23,40 +29,70 @@ class UserServices {
         return newUser;
     }
     async deleteUser(userId) {
-        const isUserDeleted = await userRepository.deleteUser(userId);
-        if (!isUserDeleted)
-            return null;
-        return isUserDeleted;
+        try {
+            const isUserDeleted = await userRepository.deleteUser(userId);
+            if (!isUserDeleted)
+                throw new AppError_1.AppError("UserNotFound", 404);
+            return isUserDeleted;
+        }
+        catch (error) {
+            throw new AppError_1.AppError("ServerError", 500);
+        }
     }
     async logout(userId) {
-        const logoutUser = await userRepository.logout(userId);
-        if (!logoutUser)
-            return null;
-        return logoutUser;
+        try {
+            const logoutUser = await userRepository.logout(userId);
+            if (!logoutUser)
+                throw new AppError_1.AppError("LogoutError", 400);
+            return logoutUser;
+        }
+        catch (error) {
+            throw new AppError_1.AppError("ServerError", 500);
+        }
     }
     async getNotesById(userId) {
-        const notes = await userRepository.getNotesById(userId);
-        if (!notes)
-            return null;
-        return notes;
+        try {
+            const notes = await userRepository.getNotesById(userId);
+            if (!notes)
+                return null;
+            return notes;
+        }
+        catch (error) {
+            throw new AppError_1.AppError("ServerError", 500);
+        }
     }
     async createNote(userId, title, content) {
-        const newNote = await userRepository.createNote(userId, title, content);
-        if (!newNote)
-            return false;
-        return newNote;
+        try {
+            const newNote = await userRepository.createNote(userId, title, content);
+            if (!newNote)
+                throw new AppError_1.AppError("CreateNoteError", 400);
+            return newNote;
+        }
+        catch (error) {
+            throw new AppError_1.AppError("ServerError", 500);
+        }
     }
     async deleteNote(userId, noteId) {
-        const deleteResult = await userRepository.deleteNote(userId, noteId);
-        if (!deleteResult)
-            return false;
-        return true;
+        try {
+            const deleteResult = await userRepository.deleteNote(userId, noteId);
+            if (!deleteResult)
+                throw new AppError_1.AppError("NoteNotFound", 404);
+            return true;
+        }
+        catch (error) {
+            throw new AppError_1.AppError("ServerError", 500);
+        }
     }
     async updateNote(noteId, title, content, status) {
-        const updateResult = await userRepository.updateNote(noteId, title, content, status);
-        if (!updateResult)
-            return false;
-        return true;
+        try {
+            const updateResult = await userRepository.updateNote(noteId, title, content, status);
+            if (!updateResult)
+                throw new AppError_1.AppError("NoteNotUpdated", 400);
+            return true;
+        }
+        catch (error) {
+            throw new AppError_1.AppError("ServerError", 500);
+        }
     }
 }
 exports.UserServices = UserServices;

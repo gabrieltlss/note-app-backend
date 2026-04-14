@@ -55,152 +55,99 @@ class UserController {
         res.status(201).json({ status: 201, message: "TokenCreated" });
     };
     logout = async (req, res) => {
-        try {
-            const user = req.user;
-            const accessToken = req.cookies.accessToken;
-            const refreshToken = req.cookies.refreshToken;
-            if (typeof user === "undefined" || !accessToken || !refreshToken)
-                return res.status(401).json({ status: 401, error: "UserNotDefined" });
-            if (typeof user.id !== "number" || typeof user.email !== "string")
-                return res.status(403).json({ status: 403, error: "InvalidUser" });
-            const isLoggedOut = await userServices.logout(user.id);
-            if (!isLoggedOut)
-                return res.status(400).json({ status: 400, error: "LogoutError" });
-            res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "strict" });
-            res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "strict" });
-            res.status(200).json({ staus: 200, message: "Success" });
-        }
-        catch (error) {
-            console.log(error);
-            res.status(500).json({ status: 500, error: "ServerError" });
-        }
+        const user = req.user;
+        const accessToken = req.cookies.accessToken;
+        const refreshToken = req.cookies.refreshToken;
+        if (typeof user === "undefined" || !accessToken || !refreshToken)
+            throw new AppError_1.AppError("UserNotDefined", 401);
+        if (typeof user.id !== "number" || typeof user.email !== "string")
+            throw new AppError_1.AppError("InvalidUser", 403);
+        await userServices.logout(user.id);
+        res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "strict" });
+        res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "strict" });
+        res.status(200).json({ staus: 200, message: "Success" });
     };
     getUserInfo = async (req, res) => {
-        try {
-            const user = req.user;
-            if (typeof user === "undefined")
-                return res.status(401).json({ status: 401, error: "UserNotDefined" });
-            if (typeof user.id !== "number" || typeof user.email !== "string")
-                return res.status(403).json({ status: 403, error: "InvalidUser" });
-            const getUser = await userServices.getUserById(user.id);
-            if (!getUser)
-                return res.status(404).json({ status: 404, error: "UserNotFound" });
-            res.status(200).json(getUser);
-        }
-        catch (error) {
-            console.log(error);
-            res.status(500).json({ status: 500, error: "ServerError" });
-        }
+        const user = req.user;
+        if (typeof user === "undefined")
+            throw new AppError_1.AppError("UserNotDefined", 401);
+        if (typeof user.id !== "number" || typeof user.email !== "string")
+            throw new AppError_1.AppError("InvalidUser", 403);
+        const getUser = await userServices.getUserById(user.id);
+        res.status(200).json(getUser);
     };
     deleteUser = async (req, res) => {
-        try {
-            const user = req.user;
-            if (typeof user === "undefined")
-                return res.status(401).json({ status: 401, error: "UserNotDefined" });
-            if (typeof user.id !== "number" || typeof user.email !== "string")
-                return res.status(403).json({ status: 403, error: "InvalidUser" });
-            const deleteUser = await userServices.deleteUser(user.id);
-            if (!deleteUser)
-                return res.status(404).json({ status: 404, error: "UserNotFound" });
-            res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "strict" });
-            res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "strict" });
-            res.status(200).json({ status: 200, error: "UserDeleted" });
-        }
-        catch (error) {
-            console.log(error);
-            res.status(500).json({ status: 500, error: "ServerError" });
-        }
+        const user = req.user;
+        if (typeof user === "undefined")
+            throw new AppError_1.AppError("UserNotDefined", 401);
+        if (typeof user.id !== "number" || typeof user.email !== "string")
+            throw new AppError_1.AppError("InvalidUser", 403);
+        await userServices.deleteUser(user.id);
+        res.clearCookie("accessToken", { httpOnly: true, secure: true, sameSite: "strict" });
+        res.clearCookie("refreshToken", { httpOnly: true, secure: true, sameSite: "strict" });
+        res.status(200).json({ status: 200, error: "UserDeleted" });
     };
     getNotesById = async (req, res) => {
-        try {
-            const user = req.user;
-            if (typeof user === "undefined")
-                return res.status(401).json({ status: 401, error: "UserNotDefined" });
-            if (typeof user.id !== "number" || typeof user.email !== "string")
-                return res.status(403).json({ status: 403, error: "InvalidUser" });
-            const getUser = await userServices.getUserById(user.id);
-            if (!getUser)
-                return res.status(404).json({ status: 404, error: "UserNotFound" });
-            const notes = await userServices.getNotesById(user.id);
-            if (!notes)
-                return res.status(204).json({ notes: [] });
-            res.status(200).json(notes);
-        }
-        catch (error) {
-            res.status(500).json({ status: 500, error: "ServerError" });
-        }
+        const user = req.user;
+        if (typeof user === "undefined")
+            throw new AppError_1.AppError("UserNotDefined", 401);
+        if (typeof user.id !== "number" || typeof user.email !== "string")
+            throw new AppError_1.AppError("InvalidUser", 403);
+        const getUser = await userServices.getUserById(user.id);
+        if (getUser.id !== user.id)
+            throw new AppError_1.AppError("InvalidUser", 403);
+        const notes = await userServices.getNotesById(user.id);
+        if (!notes)
+            return res.status(204).json({ notes: [] });
+        res.status(200).json(notes);
     };
     deleteNote = async (req, res) => {
-        try {
-            const user = req.user;
-            if (typeof user === "undefined")
-                return res.status(401).json({ status: 401, error: "UserNotDefined" });
-            if (typeof user.id !== "number" || typeof user.email !== "string")
-                return res.status(403).json({ status: 403, error: "InvalidUser" });
-            const noteIdParam = req.params.noteId;
-            if (!noteIdParam || Array.isArray(noteIdParam))
-                return res.status(400).json({ status: 400, error: "InvalidId" });
-            const noteId = parseInt(noteIdParam);
-            if (isNaN(noteId))
-                return res.status(400).json({ status: 400, error: "InvalidId" });
-            const deleteResult = await userServices.deleteNote(user.id, noteId);
-            if (!deleteResult)
-                return res.status(404).json({ status: 404, error: "NoteNotFound" });
-            res.status(200).json({ status: 200, message: "NoteDeleted" });
-        }
-        catch (error) {
-            res.status(500).json({ status: 500, error: "ServerError" });
-        }
+        const user = req.user;
+        if (typeof user === "undefined")
+            throw new AppError_1.AppError("UserNotDefined", 401);
+        if (typeof user.id !== "number" || typeof user.email !== "string")
+            throw new AppError_1.AppError("InvalidUser", 403);
+        const noteIdParam = req.params.noteId;
+        if (!noteIdParam || Array.isArray(noteIdParam))
+            throw new AppError_1.AppError("InvalidId", 400);
+        const noteId = parseInt(noteIdParam);
+        if (isNaN(noteId))
+            throw new AppError_1.AppError("InvalidId", 400);
+        await userServices.deleteNote(user.id, noteId);
+        res.status(200).json({ status: 200, message: "NoteDeleted" });
     };
     createNote = async (req, res) => {
-        try {
-            const user = req.user;
-            if (typeof user === "undefined")
-                return res.status(401).json({ status: 401, error: "UserNotDefined" });
-            if (typeof user.id !== "number" || typeof user.email !== "string")
-                return res.status(403).json({ status: 403, error: "InvalidUser" });
-            const { title, content } = req.body;
-            if (typeof title !== "string" || typeof content !== "string" ||
-                title.trim() === "" || content.trim() === "")
-                return res.status(400).json({ status: 400, error: "InvalidFields" });
-            const getUser = await userServices.getUserById(user.id);
-            if (!getUser)
-                return res.status(404).json({ status: 404, error: "UserNotFound" });
-            const noteId = await userServices.createNote(user.id, title, content);
-            if (!noteId)
-                return res.status(500).json({ status: 500, error: "ServerError" });
-            res.status(201).json({ status: 201, message: "NoteCreated" });
-        }
-        catch (error) {
-            res.status(500).json({ status: 500, error: "ServerError" });
-        }
+        const user = req.user;
+        if (typeof user === "undefined")
+            throw new AppError_1.AppError("UserNotDefined", 401);
+        if (typeof user.id !== "number" || typeof user.email !== "string")
+            throw new AppError_1.AppError("InvalidUser", 403);
+        const { title, content } = req.body;
+        if (typeof title !== "string" || typeof content !== "string" ||
+            title.trim() === "" || content.trim() === "")
+            throw new AppError_1.AppError("InvalidFields", 400);
+        const getUser = await userServices.getUserById(user.id);
+        if (getUser.id !== user.id)
+            throw new AppError_1.AppError("InvalidUser", 403);
+        await userServices.createNote(user.id, title, content);
+        res.status(201).json({ status: 201, message: "NoteCreated" });
     };
     updateNote = async (req, res) => {
-        try {
-            const user = req.user;
-            if (typeof user === "undefined")
-                return res.status(401).json({ status: 401, error: "UserNotDefined" });
-            if (typeof user.id !== "number" || typeof user.email !== "string")
-                return res.status(403).json({ status: 403, error: "InvalidUser" });
-            const { title, content, status } = req.body;
-            const noteId = req.params.noteId;
-            if (typeof noteId === "undefined" ||
-                Array.isArray(noteId) ||
-                typeof title === "undefined" ||
-                typeof content === "undefined" ||
-                typeof status === "undefined") {
-                return res.status(403).json({ status: 403, error: "InvalidFields" });
-            }
-            // Fazer checagem dos campos...
-            const updatedNote = await userServices.updateNote(parseInt(noteId), title, content, status);
-            if (!updatedNote) {
-                return res.status(400).json({ status: 400, error: "NoteNotUpdated" });
-            }
-            res.status(200).json({ status: 200, message: "NoteUpdated" });
-        }
-        catch (error) {
-            res.status(500).json({ status: 500, error: "ServerError" });
-        }
+        const user = req.user;
+        if (typeof user === "undefined")
+            throw new AppError_1.AppError("UserNotDefined", 401);
+        if (typeof user.id !== "number" || typeof user.email !== "string")
+            throw new AppError_1.AppError("InvalidUser", 403);
+        const { title, content, status } = req.body;
+        const noteId = req.params.noteId;
+        if (typeof noteId === "undefined" ||
+            Array.isArray(noteId) ||
+            typeof title === "undefined" ||
+            typeof content === "undefined" ||
+            typeof status === "undefined")
+            throw new AppError_1.AppError("InvalidFields", 403);
+        await userServices.updateNote(parseInt(noteId), title, content, status);
+        res.status(200).json({ status: 200, message: "NoteUpdated" });
     };
 }
 exports.UserController = UserController;

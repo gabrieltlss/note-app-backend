@@ -49,22 +49,22 @@ class TokenServices {
         try {
             const newToken = await userRepository.saveRefreshToken(userId, refreshToken);
             if (!newToken)
-                throw new AppError_1.AppError("SaveTokenError", 500);
+                throw new AppError_1.AppError("SaveTokenError", 400);
             return newToken;
         }
         catch (error) {
-            throw new AppError_1.AppError("SaveTokenError", 500);
+            throw new AppError_1.AppError("ServerError", 500);
         }
     }
     async updateRefreshToken(userId, token) {
         try {
             const updatedToken = await userRepository.updateRefreshToken(userId, token);
             if (!updatedToken)
-                throw new AppError_1.AppError("SaveTokenError", 500);
+                throw new AppError_1.AppError("UpdateTokenError", 400);
             return updatedToken;
         }
         catch (error) {
-            throw new AppError_1.AppError("SaveTokenError", 500);
+            throw new AppError_1.AppError("ServerError", 500);
         }
     }
     async getRefreshTokenById(tokenId) {
@@ -75,18 +75,18 @@ class TokenServices {
             return refreshToken;
         }
         catch (error) {
-            throw new AppError_1.AppError("SaveTokenError", 500);
+            throw new AppError_1.AppError("ServerError", 500);
         }
     }
     async getRefreshTokenByUser(userId) {
         try {
             const refreshToken = await userRepository.getRefreshTokenByUser(userId);
             if (!refreshToken)
-                throw new AppError_1.AppError("SaveTokenError", 500);
+                throw new AppError_1.AppError("GetTokenError", 400);
             return refreshToken;
         }
         catch (error) {
-            throw new AppError_1.AppError("SaveTokenError", 500);
+            throw new AppError_1.AppError("ServerError", 500);
         }
     }
     decodeRefreshToken(refreshToken, refreshTokenBD) {
